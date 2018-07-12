@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:100,300,400,500,700');
+
+$colors: (
+  "primary-dark": (
+    "base": #222222
+  ),
+  "light-pallete": (
+    "base": #FFFFFF,
+    "darker": darken(#FFFFFF, 1.5),
+  )
+);
+
+$images: (
+  "splash": url(/StaticFiles/Images/splash.jpg)
+);
+
+$font: "Fira Sans",Roboto,Quicksans,Poppins,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+$monospaceFont: Inconsolata, "Consolas", "Ubuntu Mono", "Courier New", monospace;

@@ -1,0 +1,33 @@
+@import 'variables';
+@import "functions";
+
+#app-mount, html, body {
+  height: 100%;
+  width: 100%;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  margin: 0;
+  font-family: $font;
+  background: color(primary-dark);
+  color: color(light-pallete, darker);
+  line-height: 2;
+}
+
+code,pre {
+  font-family: $monospaceFont;
+}
+
+.app-icon {
+  background: getIcon();
+  display: inline-block;
+  background-size: cover;
+}
+
+.invisible-input {
+  display: none;
+}

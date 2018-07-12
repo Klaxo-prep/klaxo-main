@@ -1,0 +1,13 @@
+@import "variables";
+
+@function color($color, $tone: 'base') {
+  @return map-get(map-get($colors, $color), $tone);
+}
+
+@function getImage($type) {
+  @return map_get($images, $type);
+}
+
+@function getIcon() {
+  @return url(/StaticFiles/Images/icons/icon.svg);
+}

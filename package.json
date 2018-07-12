@@ -1,0 +1,56 @@
+{
+  "version": "0.0.1-dev",
+  "scripts": {
+    "build": "webpack --optimize-dedupe --optimize-minimize",
+    "watch": "webpack-dev-server --content-base Source --mode development --hot --inline",
+    "start": "electron ."
+  },
+  "build": {
+    "appId": "bid.bakaa.klaxo",
+    "win": {
+      "iconUrl": "https://cdn2.iconfinder.com/data/icons/designer-skills/128/react-256.png"
+    },
+    "directories": {
+      "buildResources": "public"
+    }
+  },
+  "dependencies": {
+    "@material-ui/core": "^1.3.1",
+    "@material-ui/icons": "^2.0.0-beta.1",
+    "electron": "^2.0.4",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "undux": "^4.7.2",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-plugin-syntax-dynamic-import": "^6.18.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "css-loader": "^1.0.0",
+    "electron-packager": "^12.1.0",
+    "electron-react-devtools": "^0.5.3",
+    "electron-rebuild": "^1.8.1",
+    "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "html-webpack-plugin": "^3.2.0",
+    "node-sass": "^4.9.2",
+    "sass-loader": "^7.0.3",
+    "style-loader": "^0.21.0",
+    "webpack": "^4.15.1",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "^3.1.4"
+  },
+  "author": {
+    "name": "Saitama Sama",
+    "email": "saitama@bakaa.bid",
+    "url": "https://bakaa.bid"
+  },
+  "main": "main.js",
+  "description": "Klaxo.",
+  "license": "ISC"
+}
