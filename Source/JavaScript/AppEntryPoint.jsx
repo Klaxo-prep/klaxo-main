@@ -5,29 +5,52 @@ import SplashScreenProjectOverview from "./MainComponents/SplashScreen/SplashScr
 import {CreateProject} from "./Functional/CreateProject";
 import {GenericLogger} from "./Functional/Logger";
 import {ProjectDataStore} from "./Functional/ProjectDataStore";
+import KlaxEditor from "./MainComponents/KlaxMain/KlaxEditor";
 const uuidv4 = window.require('uuid/v4');
 
 export default class AppEntryPoint extends Component {
     state = {
         codeEditorOpen: false,
-        startupConfig: null
+        startupConfig: null,
+        type: null
     };
 
-    openCodeEditor = config => {
+    setupNewProject(projectConfig) {
+        (new ProjectDataStore(projectConfig, this.logger))
+            .store();
+
+        (new CreateProject(projectConfig, this.logger))
+            .createDirectory();
+    }
+
+    openCodeEditor_NewProject = config => {
         const projectConfig = {
             ...config,
             uuid: uuidv4()
         };
 
-        const projectDataStore = (new ProjectDataStore(projectConfig, this.logger))
-            .store();
-
-        const projectCreator = (new CreateProject(projectConfig, this.logger))
-            .createDirectory();
+        this.setupNewProject(projectConfig);
 
         this.setState({
             codeEditorOpen: true,
-            startupConfig: projectConfig
+            startupConfig: projectConfig,
+            type: 'project'
+        });
+    };
+
+    openCodeEditor_Existing = project => {
+        this.setState({
+            codeEditorOpen: true,
+            startupConfig: project,
+            type: 'project'
+        });
+    };
+
+    exitFromEditor = reason => {
+        this.setState({
+            codeEditorOpen: false,
+            startupConfig: null,
+            type: null
         });
     };
 
@@ -39,11 +62,25 @@ export default class AppEntryPoint extends Component {
     render() {
         return (
             <MuiThemeProvider theme={MaterialUITheme}>
-                <section className="splash-container">
-                    <SplashScreenProjectOverview logger={this.logger} actions={ {
-                        completeAction: this.openCodeEditor
-                    } } />
-                </section>
+                {
+                    this.state.codeEditorOpen
+                        ? (
+                            <KlaxEditor
+                                logger={this.logger}
+                                type={this.state.type}
+                                config={this.state.startupConfig}
+                                exitEditorHandler={this.exitFromEditor}
+                            />
+                        )
+                        : (
+                            <section className="splash-container">
+                                <SplashScreenProjectOverview logger={this.logger} actions={ {
+                                    completeAction: this.openCodeEditor_NewProject,
+                                    openExistingProject: this.openCodeEditor_Existing
+                                } } />
+                            </section>
+                        )
+                }
             </MuiThemeProvider>
         )
     }

@@ -10,8 +10,8 @@ export default class SplashScreenProjectOverview extends Component {
         return (
             <MuiThemeProvider theme={MaterialUITheme}>
                 <Paper elevation={24} className="overview">
-                    <RecentsBar />
-                    <Actions actions={{...this.props.actions}} />
+                    <RecentsBar actions={this.props.actions} />
+                    <Actions actions={this.props.actions} />
                 </Paper>
             </MuiThemeProvider>
         )

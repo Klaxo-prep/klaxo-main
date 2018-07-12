@@ -1,0 +1,96 @@
+@import "../functions";
+@import "../variables";
+
+.klax-editor-container {
+  height: 100%;
+
+  .project-actions-header {
+    width: 100%;
+    height: 45px;
+
+    background-color: color(primary-dark, lighter) !important;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+
+    .project-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-left: 2rem;
+    }
+  }
+
+  .editor-main-space {
+    display: flex;
+    height: calc(100% - 45px);
+    width: 100%;
+
+    .project-sidebar {
+      width: $sidebarWidth;
+      height: 100%;
+      background: rgba(0,0,0,.5);
+    }
+    .project-editor {
+      flex-grow: 1;
+
+      .editor-tabs {
+        width: 100%;
+        height: 45px;
+        display: flex;
+
+        .tab {
+          background: rgba(255,255,255,.06);
+          padding: .6rem .9rem;
+          display: flex;
+          align-items: center;
+
+          .content {
+            font-size: .85rem;
+            margin-right: .7rem;
+          }
+
+          .close-button {
+            cursor: pointer;
+            padding: .15rem;
+          }
+        }
+      }
+
+      .code-editor {
+        width: 100%;
+        height: calc(100% - 45px);
+        overflow: auto;
+        display: flex;
+        line-height: 1;
+
+        .line-numbers {
+          width: 45px;
+          font-family: $monospaceFont;
+
+          .line-number {
+            padding: .5rem .9rem;
+            font-size: 1rem;
+            text-align: right;
+          }
+          .line-number:nth-child(odd) {
+            background: rgba(255,255,255,.1);
+          }
+        }
+
+        .edit-live-container {
+          flex-grow: 1;
+          cursor: text;
+
+          .line {
+            font-family: $monospaceFont;
+            padding: .5rem .9rem;
+            font-size: 1rem;
+            width: calc(100% - (.9rem * 2));
+            outline: none;
+            white-space: pre;
+          }
+        }
+      }
+    }
+  }
+}

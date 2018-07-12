@@ -24,6 +24,11 @@ export default class RecentsBar extends Component {
         });
     }
 
+    openProject = project => event => {
+        const handler = this.props.actions.openExistingProject;
+        handler(project);
+    };
+
     render() {
         return (
             <MuiThemeProvider theme={MaterialUITheme}>
@@ -42,7 +47,7 @@ export default class RecentsBar extends Component {
                                     </ListSubheader>
                                     {
                                         this.state.projects.map((project, key) => (
-                                            <ListItem key={key} button={true}>
+                                            <ListItem key={key} button={true} onClick={this.openProject(project)}>
                                                 <Avatar>
                                                     <FolderIcon />
                                                 </Avatar>
