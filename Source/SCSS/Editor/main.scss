@@ -28,6 +28,7 @@
     .project-sidebar {
       width: $sidebarWidth;
       height: 100%;
+      overflow: auto;
       background: rgba(0,0,0,.5);
     }
     .project-editor {
@@ -58,28 +59,29 @@
 
       .code-editor {
         width: 100%;
-        height: calc(100% - 45px);
+        height: calc(100% - 48px);
         overflow: auto;
         display: flex;
         line-height: 1;
+        margin-top: 3px;
 
         .line-numbers {
           width: 45px;
           font-family: $monospaceFont;
+          opacity: .4;
+          user-select: none;
 
           .line-number {
             padding: .5rem .9rem;
             font-size: 1rem;
             text-align: right;
           }
-          .line-number:nth-child(odd) {
-            background: rgba(255,255,255,.1);
-          }
         }
 
         .edit-live-container {
           flex-grow: 1;
           cursor: text;
+          outline: none;
 
           .line {
             font-family: $monospaceFont;
@@ -88,7 +90,15 @@
             width: calc(100% - (.9rem * 2));
             outline: none;
             white-space: pre;
+            color: #EDEDED;
           }
+          .line.focused {
+            background: rgba(0,0,0,.4);
+          }
+        }
+
+        pre {
+          margin: 0 !important;
         }
       }
     }

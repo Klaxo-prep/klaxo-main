@@ -1,11 +1,20 @@
 import React, { Component } from 'react';
-import {Tab} from "./Tab";
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 
 export default class EditorTabs extends Component {
+    state = {};
     render() {
         return (
             <nav className="editor-tabs">
-                <Tab name="main.cpp" />
+                <Tabs
+                    value={0}
+                    indicatorColor="secondary"
+                    textColor="secondary"
+                    onChange={this.handleChange}
+                >
+                    <Tab label="main.cpp" />
+                </Tabs>
             </nav>
         );
     }

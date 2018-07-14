@@ -52,6 +52,9 @@ export class CaretUtility {
         if(!(element.childNodes[0] instanceof Node)) {
             return;
         }
+        if(element.childNodes[0].length < pos) {
+            pos = element.childNodes[0].length;
+        }
         range.setStart(element.childNodes[0], pos);
         range.collapse(true);
         sel.removeAllRanges();
@@ -61,35 +64,132 @@ export class CaretUtility {
 
 export class Line extends Component {
     static KEY_CODE_MAP = {
-        "ENTER": 13
+        "TAB": 9,
+        "ENTER": 13,
+        "SPACE": 32,
+        "BACKSPACE": 8,
+        "LEFT_ARROW": 37,
+        "UP_ARROW": 38,
+        "RIGHT_ARROW": 39,
+        "DOWN_ARROW": 40
     };
 
-    state = {
-        content: null,
-        updateContent: false
-    };
     domElement = React.createRef();
 
     setCaretPosition = pos => {
-        setTimeout(_ => CaretUtility.setCaretPosition(this.domElement.current, pos + 1), 10);
+        CaretUtility.setCaretPosition(this.domElement.current, pos);
     };
+
+    getCaretPosition = () => CaretUtility.getCaretPosition(this.domElement.current);
+
+    componentDidUpdate() {
+        if(this.props.focus) {
+            this.domElement.current.focus();
+        }
+        if(!this.props.caretUpdated) {
+            console.log(this.props);
+            this.setCaretPosition(this.props.caretPos);
+            this.props.handlers.setCaretUpdated(this.props.index);
+        }
+    }
 
     componentDidMount() {
         this.props.handlers.setCaretPositionHandler(this.setCaretPosition, this.props.index);
+        this.props.handlers.setCaretPositionGetter(this.getCaretPosition, this.props.index);
+
         this.setState({
             content: this.props.content
         });
+        if(!this.props.caretUpdated) {
+            this.setCaretPosition(this.props.caretPos);
+            this.props.handlers.setCaretUpdated(this.props.index);
+        }
+
+        if(this.props.focus) {
+            this.domElement.current.focus();
+        }
+    }
+
+    getIndentation() {
+        return this.domElement.current.childNodes[0] ? this.domElement.current.childNodes[0].textContent.search(/\S|$/) : 0;
     }
 
     handlers = {
         newLine: event => {
             const caretOffset = CaretUtility.getCaretCharacterOffsetWithin(this.domElement.current);
-            this.props.handlers.enterNewLineAfter(this.props.index, this.state.content.substring(caretOffset));
+            const indentation = this.getIndentation();
+            this.props.handlers.enterNewLineAfter(
+                this.props.index,
+                `${' '.repeat(indentation)}${this.props.content.substring(caretOffset)}`,
+                caretOffset,
+                indentation
+            );
+            event.preventDefault();
+        },
+        space: event => {
+            // check for ctrl-button or some other stuff for more editor shortcuts thingies
+            this.props.handlers.insertContent(
+                this.props.index,
+                this.getCaretPosition(),
+                ' '
+            );
+            event.preventDefault();
+        },
+        backspace: event => {
+            event.preventDefault();
+
+            const caretPos = this.getCaretPosition();
+
+            if(caretPos === 0) {
+                return;
+            }
+
+            const removedContent = `${this.props.content.substr(0, caretPos - 1)}${this.props.content.substr(caretPos, this.props.content.length)}`;
+            this.props.handlers.changeContent(
+                this.props.index,
+                caretPos - 1,
+                `${removedContent}`
+            );
+        },
+        arrowProcess: (direction, event) => {
+            event.preventDefault();
+            let currentCaretPos;
+            switch (direction) {
+                case 'left':
+                    currentCaretPos = this.getCaretPosition();
+                    if(currentCaretPos !== 0) {
+                        this.setCaretPosition(currentCaretPos - 1);
+                    }
+                    break;
+                case 'right':
+                    currentCaretPos = this.getCaretPosition();
+                    if(currentCaretPos !== this.props.content.length) {
+                        this.setCaretPosition(currentCaretPos + 1);
+                    } else if (currentCaretPos === this.props.content.leaveDelay) {
+                        // Move to the first pos of the next line
+                    }
+                    break;
+            }
+        },
+        tab: event => {
+            event.preventDefault();
+
+            this.props.handlers.insertContent(
+                this.props.index,
+                this.getCaretPosition(),
+                '    '
+            );
         }
     };
 
     ifTextualCharacter(keyCode, event) {
-        if((keyCode >= 48 && keyCode <= 90) || (keyCode >= 96 && keyCode <= 111) || (keyCode >= 160 && keyCode <= 176) || (keyCode >= 186 && keyCode <= 192)) {
+        if(
+            (keyCode >= 48 && keyCode <= 90)
+            || (keyCode >= 96 && keyCode <= 111)
+            || (keyCode >= 160 && keyCode <= 176)
+            || (keyCode >= 186 && keyCode <= 192)
+            || (keyCode >= 219 && keyCode <= 222)
+        ) {
             return event.key;
         } else {
             return null;
@@ -97,18 +197,34 @@ export class Line extends Component {
     }
 
     useKeyLogic(keyCode, event) {
+        event.stopPropagation();
         switch (keyCode) {
             case Line.KEY_CODE_MAP.ENTER:
                 this.handlers.newLine(event);
-                event.preventDefault();
+                break;
+            case Line.KEY_CODE_MAP.SPACE:
+                this.handlers.space(event);
+                break;
+            case Line.KEY_CODE_MAP.BACKSPACE:
+                this.handlers.backspace(event);
+                break;
+            case Line.KEY_CODE_MAP.LEFT_ARROW:
+                this.handlers.arrowProcess('left', event);
+                break;
+            case Line.KEY_CODE_MAP.RIGHT_ARROW:
+                this.handlers.arrowProcess('right', event);
+                break;
+            case Line.KEY_CODE_MAP.TAB:
+                this.handlers.tab(event);
                 break;
             default:
                 const textualCharacter = this.ifTextualCharacter(keyCode, event);
 
                 if(textualCharacter !== null) {
-                    this.props.handlers.changeContent(
+                    this.props.handlers.insertContent(
                         this.props.index,
-                        `${this.props.content}${textualCharacter}`
+                        this.getCaretPosition(),
+                        `${textualCharacter}`
                     );
                 }
 
@@ -128,7 +244,13 @@ export class Line extends Component {
 
     render() {
         return (
-            <div className="line" ref={this.domElement} contentEditable={true} onKeyDown={this.handleKeyPress}>
+            <div
+                className={`line ${this.props.focus ? 'focused' : ''}`}
+                ref={this.domElement}
+                contentEditable={true}
+                onKeyDown={this.handleKeyPress}
+                onClick={() => this.props.handlers.setFocusOn(this.props.index)}
+            >
                 { this.props.content }
             </div>
         );

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {MaterialUITheme} from "../../../Configurations/MaterialUITheme";
 import MuiThemeProvider from "@material-ui/core/styles/MuiThemeProvider";
 import ProjectActionsHeader from "./ProjectActionsHeader";
-import ProjectSidebar from "./ProjectSidebar";
+import ProjectSidebar from "./Sidebar/ProjectSidebar";
 import ProjectEditor from "./ProjectEditor";
 
 export default class KlaxProject extends Component {

@@ -3,6 +3,8 @@ const path = window.require('path');
 class DirectoryAlreadyExistsError extends Error {}
 
 export class CreateProject {
+    static MAIN_FILE_TEMPLATE = `// Start writing your code here...`;
+
     fileSystem = window.require('fs');
     config = null;
     logger = null;
@@ -26,6 +28,19 @@ export class CreateProject {
             }
         );
 
+        return this;
+    }
+
+    createBootstrapFiles() {
+        this.fileSystem.writeFile(
+            path.join(path.join(this.config.dir, this.config.projectName), 'main.cpp'),
+            CreateProject.MAIN_FILE_TEMPLATE,
+            error => {
+                this.logger.log({
+                    status: `Created main.cpp for ${this.config.projectName}`
+                });
+            }
+        );
         return this;
     }
 }

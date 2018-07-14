@@ -7,6 +7,7 @@ import {GenericLogger} from "./Functional/Logger";
 import {ProjectDataStore} from "./Functional/ProjectDataStore";
 import KlaxEditor from "./MainComponents/KlaxMain/KlaxEditor";
 const uuidv4 = window.require('uuid/v4');
+window.require('electron-titlebar');
 
 export default class AppEntryPoint extends Component {
     state = {
@@ -20,7 +21,8 @@ export default class AppEntryPoint extends Component {
             .store();
 
         (new CreateProject(projectConfig, this.logger))
-            .createDirectory();
+            .createDirectory()
+            .createBootstrapFiles();
     }
 
     openCodeEditor_NewProject = config => {
@@ -62,6 +64,9 @@ export default class AppEntryPoint extends Component {
     render() {
         return (
             <MuiThemeProvider theme={MaterialUITheme}>
+                <div id="electron-titlebar" className="drag">
+                    Titlebar
+                </div>
                 {
                     this.state.codeEditorOpen
                         ? (
