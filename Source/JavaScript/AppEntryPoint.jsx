@@ -64,9 +64,6 @@ export default class AppEntryPoint extends Component {
     render() {
         return (
             <MuiThemeProvider theme={MaterialUITheme}>
-                <div id="electron-titlebar" className="drag">
-                    Titlebar
-                </div>
                 {
                     this.state.codeEditorOpen
                         ? (

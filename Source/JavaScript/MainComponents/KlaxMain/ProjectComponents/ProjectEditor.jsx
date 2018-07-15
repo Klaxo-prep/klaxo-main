@@ -7,7 +7,7 @@ export default class ProjectEditor extends Component {
         return (
             <main className="project-editor">
                 <EditorTabs />
-                <CodeEditor />
+                <CodeEditor {...this.props} />
             </main>
         );
     }

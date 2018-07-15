@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import {GenericLogger} from "../../../../Functional/Logger";
 
 export class CaretUtility {
     static getCaretCharacterOffsetWithin(element) {
@@ -49,12 +50,15 @@ export class CaretUtility {
     static setCaretPosition(element, pos) {
         const range = document.createRange();
         const sel = window.getSelection();
+
         if(!(element.childNodes[0] instanceof Node)) {
             return;
         }
+
         if(element.childNodes[0].length < pos) {
             pos = element.childNodes[0].length;
         }
+
         range.setStart(element.childNodes[0], pos);
         range.collapse(true);
         sel.removeAllRanges();
@@ -74,20 +78,44 @@ export class Line extends Component {
         "DOWN_ARROW": 40
     };
 
+    loggedInitalization = false;
+
     domElement = React.createRef();
 
     setCaretPosition = pos => {
+        // Do we really want a log here?
+
+        /*this.props.logger.log({
+            level: GenericLogger.verbose,
+            tag: 'caret',
+            status: `setting caret at position ${pos} on line ${this.props.index + 1}`
+        });*/
         CaretUtility.setCaretPosition(this.domElement.current, pos);
     };
 
-    getCaretPosition = () => CaretUtility.getCaretPosition(this.domElement.current);
+    getCaretPosition = () => {
+        const caretPos = CaretUtility.getCaretPosition(this.domElement.current);
+        if(caretPos > this.props.content.length) {
+            return this.props.content.length;
+        }
+        return caretPos;
+    };
 
     componentDidUpdate() {
+        if(!this.loggedInitalization) {
+            this.props.logger.log({
+                level: GenericLogger.verbose,
+                tag: 'line',
+                status: `Initialized line ${this.props.index}`
+            });
+            this.loggedInitalization = true;
+        }
+
         if(this.props.focus) {
             this.domElement.current.focus();
         }
+
         if(!this.props.caretUpdated) {
-            console.log(this.props);
             this.setCaretPosition(this.props.caretPos);
             this.props.handlers.setCaretUpdated(this.props.index);
         }
@@ -115,17 +143,42 @@ export class Line extends Component {
     }
 
     handlers = {
+        createNewBlock: (indentation, caretOffset) => {
+            this.props.handlers.enterNewLineAfter(
+                this.props.index,
+                `${' '.repeat(indentation + 4)}`,
+                caretOffset,
+                indentation + 4
+            );
+
+            this.props.handlers.enterNewLineAfter(
+                this.props.index + 1,
+                `${' '.repeat(indentation)}}${this.props.content.substring(caretOffset)}`,
+                caretOffset,
+                indentation,
+                () => this.props.handlers.setFocusOn(this.props.index + 1, true, indentation + 4)
+            );
+        },
+
         newLine: event => {
-            const caretOffset = CaretUtility.getCaretCharacterOffsetWithin(this.domElement.current);
+            event.preventDefault();
+
+            const caretOffset = this.getCaretPosition();
             const indentation = this.getIndentation();
+
+            if(this.props.content[this.props.content.length - 1] === '{') {
+                this.handlers.createNewBlock(indentation, caretOffset);
+                 return;
+            }
+
             this.props.handlers.enterNewLineAfter(
                 this.props.index,
                 `${' '.repeat(indentation)}${this.props.content.substring(caretOffset)}`,
                 caretOffset,
                 indentation
             );
-            event.preventDefault();
         },
+
         space: event => {
             // check for ctrl-button or some other stuff for more editor shortcuts thingies
             this.props.handlers.insertContent(
@@ -135,12 +188,25 @@ export class Line extends Component {
             );
             event.preventDefault();
         },
+
         backspace: event => {
             event.preventDefault();
 
             const caretPos = this.getCaretPosition();
 
             if(caretPos === 0) {
+                // Remove this line and more to the previous line
+                if(this.props.index === 0) {
+                    // Move to the next line and place the caret on 0, if there is a next line that is
+                    if(this.props.handlers.getLine(this.props.index + 1)) {
+                        this.props.handlers.removeLine(this.props.index);
+                        this.props.handlers.setFocusOn(this.props.index + 1, true, 0);
+                    }
+                } else {
+                    // The previous line
+                    this.props.handlers.removeLine(this.props.index);
+                    this.props.handlers.setFocusOn(this.props.index - 1, true, this.props.handlers.getLine(this.props.index - 1).content.length);
+                }
                 return;
             }
 
@@ -151,6 +217,7 @@ export class Line extends Component {
                 `${removedContent}`
             );
         },
+
         arrowProcess: (direction, event) => {
             event.preventDefault();
             let currentCaretPos;
@@ -159,18 +226,35 @@ export class Line extends Component {
                     currentCaretPos = this.getCaretPosition();
                     if(currentCaretPos !== 0) {
                         this.setCaretPosition(currentCaretPos - 1);
+                    } else if(currentCaretPos === 0 && this.props.index !== 0) {
+                        this.props.handlers.moveToLine(this.props.index - 1, this.props.handlers.getLine(this.props.index - 1).content.length);
                     }
                     break;
                 case 'right':
                     currentCaretPos = this.getCaretPosition();
                     if(currentCaretPos !== this.props.content.length) {
                         this.setCaretPosition(currentCaretPos + 1);
-                    } else if (currentCaretPos === this.props.content.leaveDelay) {
-                        // Move to the first pos of the next line
+                    } else if (currentCaretPos === this.props.content.length && this.props.index !== this.props.handlers.getLineCount() - 1) {
+                        this.props.handlers.moveToLine(this.props.index + 1, 0);
                     }
                     break;
+                case 'up':
+                    currentCaretPos = this.getCaretPosition();
+                    if(this.props.index !== 0) {
+                        this.props.handlers.moveToLine(this.props.index - 1, this.getCaretPosition());
+                    }
+                    break;
+                case 'down':
+                    currentCaretPos = this.getCaretPosition();
+                    if(this.props.index !== this.props.handlers.getLineCount() - 1) {
+                        this.props.handlers.moveToLine(this.props.index + 1, this.getCaretPosition());
+                    }
+                    break;
+                default:
+                    throw new Error(`Cannot identify specified direction. Provided ${direction}.`)
             }
         },
+
         tab: event => {
             event.preventDefault();
 
@@ -213,6 +297,12 @@ export class Line extends Component {
                 break;
             case Line.KEY_CODE_MAP.RIGHT_ARROW:
                 this.handlers.arrowProcess('right', event);
+                break;
+            case Line.KEY_CODE_MAP.UP_ARROW:
+                this.handlers.arrowProcess('up', event);
+                break;
+            case Line.KEY_CODE_MAP.DOWN_ARROW:
+                this.handlers.arrowProcess('down', event);
                 break;
             case Line.KEY_CODE_MAP.TAB:
                 this.handlers.tab(event);

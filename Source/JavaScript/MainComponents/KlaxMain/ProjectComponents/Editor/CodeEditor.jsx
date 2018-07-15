@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {LineNumbers} from "./LineNumbers";
 import {Line} from "./Line";
+import {Logger} from "../../../../Functional/Logger";
 
 export default class CodeEditor extends Component {
     state = {
@@ -13,11 +14,12 @@ export default class CodeEditor extends Component {
             }
         ]
     };
+
     caretPositionHandler = [];
     caretPositionGetter = [];
 
     handlers = {
-        enterNewLineAfter: (index, partialContent, pos, newLineCaretPos = 0) => {
+        enterNewLineAfter: (index, partialContent, pos, newLineCaretPos = 0, onComplete = null) => {
             this.setState(prevState => {
                 const newState = prevState;
 
@@ -29,7 +31,13 @@ export default class CodeEditor extends Component {
                 });
 
                 return newState;
-            }, () => this.handlers.setFocusOn(index + 1));
+            }, () => {
+                if(onComplete) {
+                    onComplete();
+                } else {
+                    this.handlers.setFocusOn(index + 1);
+                }
+            });
         },
 
         changeContent: (index, toSetPos, content) => {
@@ -58,19 +66,41 @@ export default class CodeEditor extends Component {
         },
 
         moveToLine: (index, pos, graciousFallBackPos = true) => {
+            this.setState(prevState => {
+                const newState = prevState;
+                const contentLength = newState.lines[index].content.length;
+                this.handlers.setFocusOn(index);
+
+                if(graciousFallBackPos) {
+                    newState.lines[index].caretPos = pos > contentLength ? contentLength : pos;
+                } else {
+                    newState.lines[index].caretPos = pos;
+                }
+
+                newState.lines[index].caretUpdated = false;
+
+                return newState;
+            });
         },
+
+        getLineCount: () => this.state.lines.length,
+
+        getLine: index => this.state.lines[index],
 
         setCaretPositionHandler: (handler, index) => this.caretPositionHandler[index] = handler,
 
         setCaretPositionGetter: (handler, index) => this.caretPositionGetter[index] = handler,
 
-        setFocusOn: (index) =>  {
+        setFocusOn: (index, setCaretPos = false, caretPos = null) =>  {
             this.setState(prevState => {
                 const newState = prevState;
+
                 newState.lines = newState.lines.map((l, key) => {
                     if(index === key) {
                         return {
                             ...prevState.lines[key],
+                            caretPos: setCaretPos ? caretPos : prevState.lines[key].caretPos,
+                            caretUpdated: setCaretPos ? false : prevState.lines[key].caretUpdated,
                             content: l.content,
                             focus: true
                         };
@@ -85,13 +115,26 @@ export default class CodeEditor extends Component {
                 return newState;
             });
         },
+
         setCaretUpdated: index => this.setState(prevState => {
             const newState = prevState;
             newState.lines[index].caretUpdated = true;
 
             return newState;
-        })
+        }),
+
+        removeLine: (index) => {
+            this.state.lines.splice(index, 1);
+        }
     };
+
+    componentDidMount() {
+        this.props.logger.log({
+            tag: 'startup',
+            status: 'Initialized code editor',
+            level: Logger.VERBOSE
+        });
+    }
 
     render() {
         return (
@@ -101,6 +144,8 @@ export default class CodeEditor extends Component {
                     {
                         this.state.lines.map((line, key) => (
                             <Line
+                                // this has project config and logger
+                                logger={this.props.logger}
                                 handlers={this.handlers}
                                 key={key}
                                 index={key}
@@ -113,6 +158,6 @@ export default class CodeEditor extends Component {
                     }
                 </section>
             </main>
-        )
+        );
     }
 }

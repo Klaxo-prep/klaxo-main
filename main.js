@@ -16,4 +16,5 @@ app.on('ready', function() {
 
     mainWindow.loadURL('http://localhost:8080/');
     BrowserWindow.addDevToolsExtension('C:\\Users\\SaitamaSama\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\Extensions\\fmkadmapgofadopljbjfkapdkoienihi\\3.2.3_0');
+    mainWindow.openDevTools();
 });

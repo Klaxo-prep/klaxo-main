@@ -4,6 +4,7 @@ import ListSubheader from "@material-ui/core/ListSubheader";
 import {SidebarFileSystemWatcher} from "../../../../Functional/SidebarFileSystemWatcher";
 import {SidebarFile} from "./SidebarFile";
 import {SidebarDirectory} from "./SidebarDirectory";
+import {Logger} from "../../../../Functional/Logger";
 
 export default class ProjectSidebar extends Component {
     fsWatcher = null;
@@ -16,7 +17,20 @@ export default class ProjectSidebar extends Component {
         this.fsWatcher = new SidebarFileSystemWatcher(this.props.config);
         this.setState({
             initStructure: this.fsWatcher.getInitialStructure()
-        }, () => console.log(this.state));
+        }, () => {
+            console.log(this.state);
+            this.props.logger.log({
+                status: 'Initialized with initial file structure.',
+                tag: 'sidebar',
+                level: Logger.VERBOSE
+            });
+        });
+
+        this.props.logger.log({
+            status: 'Initialized sidebar for project',
+            tag: 'startup',
+            level: Logger.VERBOSE
+        });
     }
 
     static analyzeNode(node, key, nest, sub = false) {
