@@ -13,7 +13,7 @@ export default class EditorTabs extends Component {
                     textColor="secondary"
                     onChange={this.handleChange}
                 >
-                    <Tab label="main.cpp" />
+                    <Tab label={ this.props['temp_path'].split('/').pop() } />
                 </Tabs>
             </nav>
         );

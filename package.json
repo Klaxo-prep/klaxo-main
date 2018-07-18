@@ -21,6 +21,7 @@
     "directory-tree": "^2.1.0",
     "electron": "^2.0.4",
     "electron-titlebar": "0.0.3",
+    "node-cmd": "^3.0.0",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "undux": "^4.7.2",

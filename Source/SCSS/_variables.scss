@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Fira+Sans:100,300,400,500,700|Inconsolata:300,400,700');
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans:100,300,400,500,700|Fira+Mono:400,700');
 
 $colors: (
   "primary-dark": (
@@ -8,6 +8,12 @@ $colors: (
   "light-pallete": (
     "base": #FFFFFF,
     "darker": darken(#FFFFFF, 1.5),
+  ),
+  "theme-green": (
+    "base": #04b27f
+  ),
+  "theme-blue": (
+    "base": #5762d5
   )
 );
 
@@ -18,4 +24,4 @@ $images: (
 $sidebarWidth: 230px;
 
 $font: "Fira Sans",Roboto,Quicksans,Poppins,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
-$monospaceFont: Inconsolata, "Consolas", "Ubuntu Mono", "Courier New", monospace;
+$monospaceFont: "Fira Mono", Inconsolata, "Consolas", "Ubuntu Mono", "Courier New", monospace;

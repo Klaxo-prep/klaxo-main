@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {GenericLogger} from "../../../../Functional/Logger";
+import {IdentifierParser} from "../../../../Functional/IdentifierParser";
 
 export class CaretUtility {
     static getCaretCharacterOffsetWithin(element) {
@@ -75,8 +76,11 @@ export class Line extends Component {
         "LEFT_ARROW": 37,
         "UP_ARROW": 38,
         "RIGHT_ARROW": 39,
-        "DOWN_ARROW": 40
+        "DOWN_ARROW": 40,
+        "KEY_S": 83
     };
+
+    identifierParser = null;
 
     loggedInitalization = false;
 
@@ -136,6 +140,9 @@ export class Line extends Component {
         if(this.props.focus) {
             this.domElement.current.focus();
         }
+
+        this.identifierParser = new IdentifierParser(this.props.content);
+        this.handlers.markIdentifiers();
     }
 
     getIndentation() {
@@ -143,6 +150,10 @@ export class Line extends Component {
     }
 
     handlers = {
+        markIdentifiers: () => {
+            this.identifierParser.get();
+        },
+
         createNewBlock: (indentation, caretOffset) => {
             this.props.handlers.enterNewLineAfter(
                 this.props.index,
@@ -263,6 +274,26 @@ export class Line extends Component {
                 this.getCaretPosition(),
                 '    '
             );
+        },
+
+        special: {
+            normalTextInsert: (event, keyCode) => {
+                const textualCharacter = this.ifTextualCharacter(keyCode, event);
+
+                if(textualCharacter !== null) {
+                    this.props.handlers.insertContent(
+                        this.props.index,
+                        this.getCaretPosition(),
+                        `${textualCharacter}`
+                    );
+                }
+
+                event.preventDefault();
+            },
+
+            save: event => {
+                this.props.handlers.saveInstruction('Ctrl + S');
+            }
         }
     };
 
@@ -307,18 +338,15 @@ export class Line extends Component {
             case Line.KEY_CODE_MAP.TAB:
                 this.handlers.tab(event);
                 break;
-            default:
-                const textualCharacter = this.ifTextualCharacter(keyCode, event);
-
-                if(textualCharacter !== null) {
-                    this.props.handlers.insertContent(
-                        this.props.index,
-                        this.getCaretPosition(),
-                        `${textualCharacter}`
-                    );
+            case Line.KEY_CODE_MAP.KEY_S:
+                if(event.ctrlKey) {
+                    this.handlers.special.save(event);
+                } else {
+                    this.handlers.special.normalTextInsert(event, keyCode);
                 }
-
-                event.preventDefault();
+                break;
+            default:
+                this.handlers.special.normalTextInsert(event, keyCode);
                 break;
         }
     }

@@ -4,6 +4,8 @@ import {Line} from "./Line";
 import {Logger} from "../../../../Functional/Logger";
 
 export default class CodeEditor extends Component {
+    static LINE_SEPARATOR = "\n";
+
     state = {
         lines: [
             {
@@ -125,8 +127,49 @@ export default class CodeEditor extends Component {
 
         removeLine: (index) => {
             this.state.lines.splice(index, 1);
+        },
+
+        saveInstruction: (key) => {
+            const contentJoined = this.state.lines.map(line => line.content).join(CodeEditor.LINE_SEPARATOR);
+
+            const fs = window.require('fs');
+            fs.writeFile(this.props.path, contentJoined, err => {
+                if(err) console.error(err);
+            });
+
+            this.props.logger.log({
+                status: `Saved file to path ${this.props.path} due to ${key}`,
+                tag: 'editor',
+                level: Logger.VERBOSE
+            });
         }
     };
+
+    componentDidUpdate(prevProps) {
+        if(prevProps.content !== this.props.content) {
+            this.setLinesFromContent();
+        }
+    }
+
+    setLinesFromContent() {
+        const lines = this.props.content.split(CodeEditor.LINE_SEPARATOR);
+
+        this.setState({
+            lines: lines.map((line, index) => {
+                const lineData = {
+                    focus: false,
+                    caretPos: 0,
+                    caretUpdated: false,
+                    content: line
+                };
+                if(index === 0) {
+                    lineData.focus = true;
+                }
+
+                return lineData;
+            })
+        });
+    }
 
     componentDidMount() {
         this.props.logger.log({
@@ -134,6 +177,8 @@ export default class CodeEditor extends Component {
             status: 'Initialized code editor',
             level: Logger.VERBOSE
         });
+
+        this.setLinesFromContent();
     }
 
     render() {
